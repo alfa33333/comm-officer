@@ -30,6 +30,20 @@ def plot_image(image):
   plt.imshow(image)
 
 # game functions
+
+class chapter:
+  ''' This holds the scenario information
+  '''
+
+  def __init__(self, chapter_info):
+    self.path = chapter_info[0]
+    self.image = self.load(self.path)
+    self.shift = chapter_info[1]
+    self.rows = chapter_info[2]
+
+  def load(self, path):
+    return np.load(path)
+
 class Game:
     ''' This holds the game data 
     '''
