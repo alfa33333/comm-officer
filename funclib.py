@@ -35,14 +35,16 @@ class chapter:
   ''' This holds the scenario information
   '''
 
-  def __init__(self, chapter_info):
-    self.path = chapter_info[0]
+  def __init__(self, filename):
+    self.chapter_info = np.load(filename+".npy")
+    self.path = self.chapter_info[0]
     self.image = self.load(self.path)
-    self.shift = chapter_info[1]
-    self.rows = chapter_info[2]
+    self.shift = int(self.chapter_info[1])
+    self.rows = self.chapter_info[2]
 
   def load(self, path):
     return np.load(path)
+  
 
 class Game:
     ''' This holds the game data 
@@ -56,6 +58,9 @@ class Game:
     
     def get_solution(self):
       return self.solution
+    
+    def show_image(self):
+      plt.imshow(self.data)
 
 def setup_chapter(chapter):
   image = chapter.image
@@ -156,24 +161,23 @@ class Parser:
     else:
       print("The data was not shifted")
     
-def arg_parser(self, args):
-  if len(args)>=2:
-      arg1 = args[1]
-      if arg1.isdigit():
-        arg1 = int(arg1)
+  def arg_parser(self, args):
+    if len(args)>=2:
+        arg1 = args[1]
+        if arg1.isdigit():
+          arg1 = int(arg1)
+        else:
+          arg1 = 0
+        arg2 = 0
+    if len(args)>=3:
+      arg2 = args[2]
+      if arg2.isdigit():
+        arg2 = int(arg2)
       else:
-        arg1 = 0
-      arg2 = 0
-  if len(args)>=3:
-    arg2 = args[2]
-    if arg2.isdigit():
-      arg2 = int(arg2)
-    else:
-      arg2 = 0 
-  return arg1, arg2
+        arg2 = 0 
+    return arg1, arg2
 
-def game_loop(chapter):
-  game = setup_chapter(chapter)
+def game_loop(game):
   parser = Parser(game)
   command = ""
   while not (command.lower() == "exit" or command.lower == "q"):
