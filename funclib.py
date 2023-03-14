@@ -138,9 +138,9 @@ class Parser:
       check_integrity(self.data_manipulation)
     else:
       arg1, arg2 = self.arg_parser(args)
-      if  0 >= arg1 > (height - 1):
+      if  len(args)==2 and 0 <= arg1 < height:
         check_integrity(self.data_manipulation, arg1)
-      elif 0 >= arg2 > (height - 1):
+      elif len(args)==3 and 0 <= arg2 < height:
         check_integrity(self.data_manipulation, arg2)
       else:
         print("Check integrity of data: are your arguments correct?")
