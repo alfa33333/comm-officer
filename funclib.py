@@ -39,7 +39,7 @@ class chapter:
     self.chapter_info = np.load(filename+".npy")
     self.path = self.chapter_info[0]
     self.image = self.load(self.path)
-    self.shift = int(self.chapter_info[1])
+    self.shift = self.chapter_info[1] if self.chapter_info[1] == 'random' else int(self.chapter_info[1])
     self.rows = self.chapter_info[2]
 
   def load(self, path):
@@ -64,12 +64,23 @@ class Game:
 
 def setup_chapter(chapter):
   image = chapter.image
-  shift = chapter.shift
   height, width = image.shape
   corrupt_data = np.full(height, -1)
   solution_image = np.column_stack((image, corrupt_data))
   new_width = width + 1
-  damaged_image = np.roll(solution_image.flatten(), shift).reshape(height, new_width)
+  if chapter.shift != 'random':
+    shift = chapter.shift
+    damaged_image = np.roll(solution_image.flatten(), shift).reshape(height, new_width)
+  else:
+    if chapter.rows == 'all':
+      shift = np.random.randint(0,width, 1)
+      damaged_image = np.roll(solution_image.flatten(), shift).reshape(height, new_width)
+    else:
+      shift = np.random.randint(0,width, height)
+      damaged_image = solution_image.copy()
+      for i in range(len(shift)):
+        damaged_image[i] = np.roll(solution_image[i], shift[i])
+
   return Game(damaged_image, solution_image)
 
 class Parser:
