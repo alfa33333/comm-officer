@@ -9,13 +9,15 @@ def image_size(image_name):
 def check_integrity(image_name, row_val=0):
   idx = np.where(image_name[row_val] < 0)[0][0]
   print(f"Column error index: {idx}")
+  return idx
+
 
 def shift_image(image_name, shift_value):
   size = image_name.shape
   image_flat = image_name.flatten()
   image_rolled = np.roll(image_flat, -1*(shift_value + 1))
   image_name = image_rolled.reshape(size)
-  print(f"Shift complete")
+  print(f"Shift complete {shift_value}")
   return image_name
 
 def data_correct(image_name, proof):
@@ -97,6 +99,8 @@ class Parser:
     command = command.lower()
     if "reset" in command:
       return "reset"
+    elif "tandem" in command:
+      return "tandem"
     elif "size" in command:
       return "size"
     elif "check" in command:
@@ -121,6 +125,8 @@ class Parser:
     intent = self.get_player_intent(command)
     if intent == "reset":
       self.reset()
+    elif intent == "tandem":
+      self.tandem(command)
     elif intent == "size":
       image_size(self.data_manipulation)
     elif intent == "check":
@@ -187,6 +193,40 @@ class Parser:
       else:
         arg2 = 0 
     return arg1, arg2
+  
+  def tandem(self, command):
+    command = command.lower()
+    args =  command.split()
+    if args[0] != "tandem":
+      print("The tandem instruction is is not used correctly, check your order.")
+      return
+    else:
+      subargs = args[1:]
+      if len(subargs) == 2:
+        if subargs[0] == "shift":
+          print("shift instruction needs a shift value")
+          return
+        else:
+          buffer = self.tandem_parser(subargs[0])
+          self.tandem_parser(subargs[1], buffer)
+      elif len(subargs) >= 3:
+        buffer = self.tandem_parser(subargs[0], subargs[1])
+        self.tandem_parser(subargs[2], buffer)
+
+  def tandem_parser(self, arg, arg2 = '0'):
+    save_val = 0
+    if arg == "size":
+      image_size(self.data_manipulation)
+    elif arg == "check":
+      save_val = check_integrity(self.data_manipulation, int(arg2))
+    elif arg == "shift":
+      self.shift_func(arg + " " + arg2)
+    elif arg == "correct":
+      self.proof_data()
+    return str(save_val)
+        
+
+
 
 def game_loop(game):
   parser = Parser(game)
