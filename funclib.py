@@ -99,6 +99,8 @@ class Parser:
     command = command.lower()
     if "reset" in command:
       return "reset"
+    elif "loop" in command:
+      return "loop"
     elif "tandem" in command:
       return "tandem"
     elif "size" in command:
@@ -125,8 +127,10 @@ class Parser:
     intent = self.get_player_intent(command)
     if intent == "reset":
       self.reset()
+    elif intent == "loop":
+      end_game = self.loop(command)
     elif intent == "tandem":
-      self.tandem(command)
+      end_game = self.tandem(command)
     elif intent == "size":
       image_size(self.data_manipulation)
     elif intent == "check":
@@ -195,13 +199,25 @@ class Parser:
     return arg1, arg2
   
   def tandem(self, command):
+    '''
+    the tandem function allows to concatenate instructions. It is considered only 1 instruction.
+    '''
     command = command.lower()
     args =  command.split()
     if args[0] != "tandem":
       print("The tandem instruction is is not used correctly, check your order.")
       return
     else:
-      subargs = args[1:]
+      subargs = args[1:4]
+      if len(subargs) >= 3:
+        if subargs[1].isdigit():
+          buffer = self.tandem_parser(subargs[0], subargs[1])
+          self.tandem_parser(subargs[2], buffer)
+          if subargs[2] == "correct":
+            return np.array_equal(self.data_manipulation, self.game.get_solution())
+        else:
+          subargs.pop(1)
+      
       if len(subargs) == 2:
         if subargs[0] == "shift":
           print("shift instruction needs a shift value")
@@ -209,9 +225,11 @@ class Parser:
         else:
           buffer = self.tandem_parser(subargs[0])
           self.tandem_parser(subargs[1], buffer)
-      elif len(subargs) >= 3:
-        buffer = self.tandem_parser(subargs[0], subargs[1])
-        self.tandem_parser(subargs[2], buffer)
+          if subargs[1] == "correct":
+            return np.array_equal(self.data_manipulation, self.game.get_solution())
+      
+    return False
+
 
   def tandem_parser(self, arg, arg2 = '0'):
     save_val = 0
