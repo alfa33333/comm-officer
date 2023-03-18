@@ -253,5 +253,7 @@ def game_loop(game):
     print("Please give me an instruction:")
     command = input(">")
     end_game = parser.parse_command(command)
+    if end_game:
+      break
    
   return parser.data_manipulation 
