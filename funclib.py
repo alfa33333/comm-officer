@@ -217,7 +217,7 @@ class Parser:
       if len(subargs) == 2:
         rep = subargs[1]
         func1 = self.get_player_intent(subargs[0])
-        for i in range(rep):
+        for i in range(int(rep)):
           result = self.instructions_selector(func1, func1 + str(i))
       return result
     return False
