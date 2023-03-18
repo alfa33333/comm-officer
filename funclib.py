@@ -114,6 +114,22 @@ class Parser:
     else:
       return "NaC"
 
+  def instructions_selector(self,intent, command):
+    end_game = False
+
+    if intent == "tandem":
+      end_game = self.tandem(command)
+    elif intent == "size":
+      image_size(self.data_manipulation)
+    elif intent == "check":
+      self.integrity(command)
+    elif intent == "shift":
+      self.shift_func(command)
+    elif intent == "correct":
+      end_game = self.proof_data()
+    else:
+      print("I'm not sure what you want to do.")
+    return end_game
 
   def parse_command(self, command):
     # add this command to the history
@@ -129,19 +145,10 @@ class Parser:
       self.reset()
     elif intent == "loop":
       end_game = self.loop(command)
-    elif intent == "tandem":
-      end_game = self.tandem(command)
-    elif intent == "size":
-      image_size(self.data_manipulation)
-    elif intent == "check":
-      self.integrity(command)
-    elif intent == "shift":
-      self.shift_func(command)
-    elif intent == "correct":
-      end_game = self.proof_data()
     else:
-      print("I'm not sure what you want to do.")
+      end_game = self.instructions_selector(intent, command)
     return end_game
+    
 
   def reset(self):
     self.data_manipulation = self.game.get_data()
@@ -198,6 +205,24 @@ class Parser:
         arg2 = 0 
     return arg1, arg2
   
+  def loop(self, command):
+    
+    command = command.lower()
+    args = command.split()
+
+    if args[0] != "loop":
+      print("The tandem instruction is not used correctly, try again.")
+    else:
+      subargs = args[1:]
+      if len(subargs) == 2:
+        rep = subargs[1]
+        func1 = self.get_player_intent(subargs[0])
+        for i in range(rep):
+          result = self.instructions_selector(func1, func1 + str(i))
+      return result
+    return False
+
+  
   def tandem(self, command):
     '''
     the tandem function allows to concatenate instructions. It is considered only 1 instruction.
@@ -205,7 +230,7 @@ class Parser:
     command = command.lower()
     args =  command.split()
     if args[0] != "tandem":
-      print("The tandem instruction is is not used correctly, check your order.")
+      print("The tandem instruction is not used correctly, check your order.")
       return
     else:
       subargs = args[1:4]
