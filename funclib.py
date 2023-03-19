@@ -188,29 +188,26 @@ class Parser:
       print("There is no shift value")
       return
     arg1, arg2 = self.arg_parser(args)
-    if arg1 != 0:
+    if arg1 and arg2 is not None:
       # print("arg1 used")
-      self.data_manipulation = shift_image(self.data_manipulation, arg1)
-    elif arg2 != 0:
+      self.data_manipulation = shift_image(self.data_manipulation, arg1, row=arg2)
+    elif arg2 is None and arg1 is not None:
       # print("arg2 used")
-      self.data_manipulation = shift_image(self.data_manipulation, arg2)
+      self.data_manipulation = shift_image(self.data_manipulation, arg1)
     else:
       print("The data was not shifted")
     
   def arg_parser(self, args):
-    if len(args)>=2:
-        arg1 = args[1]
-        if arg1.isdigit():
-          arg1 = int(arg1)
-        else:
-          arg1 = 0
-        arg2 = 0
-    if len(args)>=3:
+    arg1 = args[1]
+    arg2 = None
+    if arg1.isdigit():
+      arg1 = int(arg1)
+    else:
+      arg1 = None
+    if len(args) > 2:
       arg2 = args[2]
       if arg2.isdigit():
         arg2 = int(arg2)
-      else:
-        arg2 = 0 
     return arg1, arg2
   
   def loop(self, command):
@@ -249,7 +246,7 @@ class Parser:
             rep = i
             break
         for i in range(int(rep)):
-          result = self.instructions_selector(func1, func1 + " " + params[0] + " " + str(i) + " " +params[1]) 
+          result = self.instructions_selector(func1, func1 + " " + params[0] + " " + str(i) + " " +params[1] + " row") 
       
       return result
     return False
@@ -265,11 +262,14 @@ class Parser:
       print("The tandem instruction is not used correctly, check your order.")
       return
     else:
-      subargs = args[1:4]
+      subargs = args[1:5]
       if len(subargs) >= 3:
         if subargs[1].isdigit():
           buffer = self.tandem_parser(subargs[0], subargs[1])
-          self.tandem_parser(subargs[2], buffer)
+          if len(subargs)>3 and subargs[3] == "row":
+            self.tandem_parser(subargs[2], buffer, subargs[1])
+          else:
+            self.tandem_parser(subargs[2], buffer)
           if subargs[2] == "correct":
             return np.array_equal(self.data_manipulation, self.game.get_solution())
         else:
@@ -288,14 +288,17 @@ class Parser:
     return False
 
 
-  def tandem_parser(self, arg, arg2 = '0'):
+  def tandem_parser(self, arg, arg2 = '0', arg3 = None):
     save_val = 0
     if arg == "size":
       image_size(self.data_manipulation)
     elif arg == "check":
       save_val = check_integrity(self.data_manipulation, int(arg2))
     elif arg == "shift":
-      self.shift_func(arg + " " + arg2)
+      if arg3 is None:
+        self.shift_func(arg + " " + arg2)
+      else:
+        self.shift_func(arg + " " + arg2 + " " + arg3)
     elif arg == "correct":
       self.proof_data()
     return str(save_val)
