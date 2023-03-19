@@ -227,7 +227,8 @@ class Parser:
         if subargs[1].isdigit(): 
           rep = subargs[1]
         else:
-          rep = 0 
+          rep = 0
+          print("Mistake: number of loops unknown")  
         for i in range(int(rep)):
           result = self.instructions_selector(func1, func1 + " " + str(i))
       elif func1 == "tandem":
