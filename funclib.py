@@ -15,12 +15,17 @@ def check_integrity(image_name, row_val=0):
   return idx
 
 
-def shift_image(image_name, shift_value):
-  size = image_name.shape
-  image_flat = image_name.flatten()
-  image_rolled = np.roll(image_flat, -1*(shift_value + 1))
-  image_name = image_rolled.reshape(size)
-  print(f"Shift complete {shift_value}")
+def shift_image(original_name, shift_value, row = None):
+  image_name = original_name.copy()
+  if row is None:
+    size = image_name.shape
+    for i in range(size[0]):
+      image_name[i] = np.roll(image_name[i], -1*(shift_value + 1))
+    print(f"Shift complete {shift_value} index for all rows.")
+  else:
+    image_rolled = np.roll(image_name[row], -1*(shift_value + 1))
+    image_name[row] = image_rolled
+    print(f"Shift complete {shift_value} index for {row} row.")
   return image_name
 
 def data_correct(image_name, proof):
