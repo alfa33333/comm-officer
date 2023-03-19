@@ -188,7 +188,7 @@ class Parser:
       print("There is no shift value")
       return
     arg1, arg2 = self.arg_parser(args)
-    if arg1 and arg2 is not None:
+    if type(arg1)==int and type(arg2)==int is not None:
       # print("arg1 used")
       self.data_manipulation = shift_image(self.data_manipulation, arg1, row=arg2)
     elif arg2 is None and arg1 is not None:
