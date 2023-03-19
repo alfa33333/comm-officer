@@ -70,18 +70,18 @@ def setup_chapter(chapter):
   corrupt_data = np.full(height, -1)
   solution_image = np.column_stack((image, corrupt_data))
   new_width = width + 1
+  damaged_image = solution_image.copy()
+  rows = height
   if chapter.shift != 'random':
-    shift = chapter.shift
-    damaged_image = np.roll(solution_image.flatten(), shift).reshape(height, new_width)
+    shift = np.full(rows, chapter.shift)
   else:
     if chapter.rows == 'all':
-      shift = np.random.randint(0,width, 1)
-      damaged_image = np.roll(solution_image.flatten(), shift).reshape(height, new_width)
+      shift = np.full(rows, np.random.randint(0,width, 1))
     else:
       shift = np.random.randint(0,width, height)
-      damaged_image = solution_image.copy()
-      for i in range(len(shift)):
-        damaged_image[i] = np.roll(solution_image[i], shift[i])
+      rows = len(shift)
+  for i in range(rows):
+      damaged_image[i] = np.roll(solution_image[i], shift[i])
 
   return Game(damaged_image, solution_image)
 
@@ -209,16 +209,36 @@ class Parser:
     
     command = command.lower()
     args = command.split()
-
     if args[0] != "loop":
       print("The tandem instruction is not used correctly, try again.")
     else:
       subargs = args[1:]
+      func1 = self.get_player_intent(subargs[0])
+      result = False
       if len(subargs) == 2:
-        rep = subargs[1]
-        func1 = self.get_player_intent(subargs[0])
+        rep = subargs[1] 
         for i in range(int(rep)):
-          result = self.instructions_selector(func1, func1 + str(i))
+          result = self.instructions_selector(func1, func1 + " " + str(i))
+      elif func1 == "tandem":
+        params = []
+        k = 1
+        while k < (len(subargs)):
+          intent = self.get_player_intent(subargs[k])
+          if intent == "NaC":
+            continue
+          else:
+            params.append(intent) 
+          if len(params) == 2:
+            break
+          k+=1
+        rep = '0'
+        for i in subargs:
+          if i.isdigit():
+            rep = i
+            break
+        for i in range(int(rep)):
+          result = self.instructions_selector(func1, func1 + " " + params[0] + " " + str(i) + " " +params[1]) 
+      
       return result
     return False
 
