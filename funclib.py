@@ -224,7 +224,10 @@ class Parser:
       func1 = self.get_player_intent(subargs[0])
       result = False
       if len(subargs) == 2:
-        rep = subargs[1] 
+        if subargs[1].isdigit(): 
+          rep = subargs[1]
+        else:
+          rep = 0 
         for i in range(int(rep)):
           result = self.instructions_selector(func1, func1 + " " + str(i))
       elif func1 == "tandem":
