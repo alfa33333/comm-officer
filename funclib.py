@@ -215,7 +215,7 @@ class Parser:
     command = command.lower()
     args = command.split()
     if args[0] != "loop":
-      print("The tandem instruction is not used correctly, try again.")
+      print("The loop instruction is not used correctly, try again.")
     else:
       subargs = args[1:]
       func1 = self.get_player_intent(subargs[0])
