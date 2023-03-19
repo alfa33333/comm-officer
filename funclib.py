@@ -8,7 +8,10 @@ def image_size(image_name):
 
 def check_integrity(image_name, row_val=0):
   idx = np.where(image_name[row_val] < 0)[0][0]
-  print(f"Column error index: {idx}")
+  if idx == (image_name.shape[1] - 1) :
+    print(f"Column correctly positioned")
+  else:
+    print(f"Column error index: {idx}")
   return idx
 
 
