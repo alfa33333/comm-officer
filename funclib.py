@@ -295,7 +295,7 @@ class Parser:
       print("The loop instruction is not used correctly, try again.")
     else:
       subargs = args[1:]
-      func1 = self.get_player_intent(subargs[0])
+      func1 = self.get_player_intent(subargs)
       result = False
       if len(subargs) == 2:
         if subargs[1].isdigit(): 
@@ -310,13 +310,14 @@ class Parser:
         k = 1
         while k < (len(subargs)):
           intent = self.get_player_intent(subargs[k])
+          k+=1
           if intent == "NaC":
             continue
           else:
             params.append(intent) 
           if len(params) == 2:
             break
-          k+=1
+          
         rep = '0'
         for i in subargs:
           if i.isdigit():
