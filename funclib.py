@@ -51,6 +51,10 @@ class chapter:
     self.image = self.load(self.path)
     self.shift = self.chapter_info[1] if self.chapter_info[1] == 'random' else int(self.chapter_info[1])
     self.rows = self.chapter_info[2]
+    if self.rows == "cipher":
+      self.damaged_data = self.chapter_info[3]
+      self.phrase = self.chapter_info[4]
+      self.passphrase = self.chapter_info[5]
 
   def load(self, path):
     return np.load(path)
