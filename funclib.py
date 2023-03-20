@@ -1,3 +1,5 @@
+import copy
+import string
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -39,6 +41,52 @@ def data_correct(image_name, proof):
 def plot_image(image):
   plt.imshow(image)
 
+def cipher(text, shift):
+  alphabet = string.ascii_lowercase
+  shift_alphabet = alphabet[shift:] + alphabet[:shift]
+  table = str.maketrans(alphabet, shift_alphabet)
+  return text.translate(table)
+
+def decipher_game(game):
+  command = ""
+  counter = 0
+  test_cipher = game.get_code()
+  while not (command.lower() == "exit"or command.lower=="q"):
+    command = input(">> ")
+    if "exit" in command:
+      continue
+    if "reset" in command:
+      test_cipher = game.get_code()
+      counter = 0
+      print("phrase reset. Words unlocked.")
+    args = command.split()
+    if args[0] == "cipher":
+      shift = int(args[1]) if len(args) > 1 and args[1].isdigit() else 0
+      lock = True if len(args) > 2  and args[2] == "lock" else False
+      words = test_cipher.split()
+      decipher_words = words.copy()
+      for i in range(counter, len(words)):
+        decipher_words[i] = cipher(words[i], 26 - shift)
+      if lock and counter < len(words):
+        words[counter] = decipher_words[counter]
+        test_cipher = " ".join(words)
+        print(f"locked word {counter}")
+        print(test_cipher)
+        counter += 1
+      elif lock and counter >= len(words):
+        print("All words are locked")
+        print(test_cipher)
+      else:
+        print("This is the code:")
+        print(" ".join(decipher_words))
+    elif args[0] == "passphrase":
+      if test_cipher == game.get_passphrase():
+        print("Data deciphered.")
+        return False, game.get_data() - 106
+      else:
+        print("wrong, reset and try again.")
+  return game.get_cipher(), game.get_data()
+
 # game functions
 
 class chapter:
@@ -63,15 +111,34 @@ class chapter:
 class Game:
     ''' This holds the game data 
     '''
-    def __init__(self, received_data, proof_image):
+    def __init__(self, received_data, proof_image, cipher = False, phrase = None, passphrase = None):
       self.data = received_data
       self.solution = proof_image
+      self.cipher = cipher
+      if self.cipher:
+        self.phrase = phrase
+        self.passphrase = passphrase
 
     def get_data(self):
       return self.data
     
     def get_solution(self):
       return self.solution
+    
+    def get_passphrase(self):
+      if self.cipher:
+        return self.phrase
+      else:
+        return None
+
+    def get_code(self):
+      if self.cipher:
+        return self.passphrase
+      else:
+        return None
+    
+    def get_cipher(self):
+      return self.cipher
     
     def show_image(self):
       plt.imshow(self.data)
@@ -81,21 +148,27 @@ def setup_chapter(chapter):
   height, width = image.shape
   corrupt_data = np.full(height, -1)
   solution_image = np.column_stack((image, corrupt_data))
-  new_width = width + 1
-  damaged_image = solution_image.copy()
-  rows = height
-  if chapter.shift != 'random':
-    shift = np.full(rows, chapter.shift)
-  else:
-    if chapter.rows == 'all':
-      shift = np.full(rows, np.random.randint(0,width, 1))
-    else:
-      shift = np.random.randint(0,width, height)
-      rows = len(shift)
-  for i in range(rows):
-      damaged_image[i] = np.roll(solution_image[i], shift[i])
 
-  return Game(damaged_image, solution_image)
+  if chapter.rows != "cipher":
+    new_width = width + 1
+    damaged_image = solution_image.copy()
+    rows = height
+    if chapter.shift != 'random':
+      shift = np.full(rows, chapter.shift)
+    else:
+      if chapter.rows == 'all':
+        shift = np.full(rows, np.random.randint(0,width, 1))
+      else:
+        shift = np.random.randint(0,width, height)
+        rows = len(shift)
+    for i in range(rows):
+        damaged_image[i] = np.roll(solution_image[i], shift[i])
+    return Game(damaged_image, solution_image)
+  elif chapter.rows == "cipher":
+    damaged_image = np.load(chapter.damaged_data)
+    phrase = chapter.phrase
+    passphrase = chapter.passphrase
+    return Game(damaged_image, solution_image, cipher=True, phrase = phrase, passphrase=passphrase)
 
 class Parser:
   ''' The parser interprets the instructions to terminal
@@ -311,7 +384,15 @@ class Parser:
 
 
 def game_loop(game):
-  parser = Parser(game)
+  internal_game = copy.deepcopy(game)
+  if internal_game.get_cipher():
+    print("The data is ciphered, deciphering is needed first.")
+    internal_game.cipher, internal_game.data = decipher_game(internal_game)
+    if internal_game.get_cipher():
+      print("Data still not deciphered. Exiting.")
+      return
+
+  parser = Parser(internal_game)
   command = ""
   while not (command.lower() == "exit" or command.lower == "q"):
     print("Please give me an instruction:")
@@ -319,5 +400,5 @@ def game_loop(game):
     end_game = parser.parse_command(command)
     if end_game:
       break
-   
+  
   return parser.data_manipulation 
